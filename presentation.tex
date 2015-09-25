@@ -1,0 +1,163 @@
+\documentclass{beamer}
+\title{Clocks and Snapshots}
+\author{Michael Whittaker}
+
+\usepackage{tikz}
+\newcommand{\set}[1]{\left\{#1\right\}}
+\newcommand{\carets}[1]{\left\langle #1 \right\rangle}
+
+\newcommand{\picframe}[2]{
+  % http://tex.stackexchange.com/a/3927
+  { % all template changes are local to this group.
+    \setbeamertemplate{navigation symbols}{}
+    \begin{frame}[plain]
+      \begin{tikzpicture}[remember picture,overlay]
+        \node[at=(current page.center)] {
+          \includegraphics[#2]{#1}
+        };
+      \end{tikzpicture}
+    \end{frame}
+  }
+}
+
+\begin{document}
+\begin{frame}
+  \titlepage
+\end{frame}
+
+% We use time every day as a way to order events. For example, an event that
+% occurred at 10:15 comes before an event at 10:20. However, we run into some
+% difficulties when we try to apply these same notions of time to a distributed
+% system.
+\picframe{clocktower}{height=\paperheight}
+
+\begin{frame}{Mathematical Preliminaries: Relations}
+    A \emph{relation} $R$ on sets $A$ and $B$ is a subset of $A \times B$.
+    Alternatively, a relation $R$ on a set $A$ is a subset of $A \times A$.
+    \[
+      R \subseteq A \times B, \qquad R \subseteq A \times A
+    \]
+
+    \pause
+
+    For example, the following sets are relations on $A = \set{1, 2}$ and $B =
+    \set{x, y, z}$.
+      \begin{itemize}
+        \item $\set{(1, x), (2, x)}$
+        \item $\set{(1, x), (1, y), (2, z)}$
+        \item $A \times B$
+        \item $\set{}$
+      \end{itemize}
+
+    \pause
+
+    We denote $(a, b) \in R$ as $a R b$. For example $1 = 1$ denotes $(1, 1)
+    \in =$, and $1 \leq 42$ denotes $(1, 42) \in \leq$.
+\end{frame}
+
+\begin{frame}{Mathematical Preliminaries: Partial Orderings}
+  An \emph{irreflexive partial ordering} $<$ on a set $A$ is a relation on $A$
+  that satisfies three properties:
+  \begin{enumerate}
+    \item \textbf{irreflexivity} $a \not< a$.
+    \item \textbf{antisymmetry} If $a < b$ then $b \not< a$.
+    \item \textbf{transitivity} If $a < b$ and $b < c$, then $a < c$.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Mathematical Preliminaries: Partial Orderings}
+  For example, the strict subset relation $\subset$ is an irreflexive partial
+  order on the powerset $2^A$ of some a set $A$.
+  \begin{enumerate}
+    \item \textbf{irreflexivity} $\set{1, 2, 3} \not\subset \set{1, 2, 3}$.
+    \item \textbf{antisymmetry} $\set{1, 2} \subset \set{1, 2, 3}$, so $\set{1,
+      2, 3} \not\subset \set{1, 2}$.
+    \item \textbf{transitivity} $\set{1} \subset \set{1, 2}$ and $\set{1, 2} \subset \set{1, 2, 3}$, so $\set{1} \subset \set{1, 2, 3}$.
+  \end{enumerate}
+
+  \pause
+
+  Note it's not always true that $a < b$ or $b < a$. For example, $\set{1, 2}
+  \not\subset \set{2, 3}$ and $\set{2, 3} \not\subset \set{1, 2}$.
+\end{frame}
+
+\begin{frame}{Mathematical Preliminaries: Total Orderings}
+  A \emph{irreflexive total ordering} $<$ on a set $A$ is an irreflexive
+  partial ordering on $A$ that satisfies the additional property:
+  \begin{enumerate}
+    \item \textbf{totality} If $a \neq b$ then $a < b$ or $b < a$.
+  \end{enumerate}
+\end{frame}
+
+% With the mathematical preliminaries out of the way, we can now ask ourselves
+% in the context of a distributed system, what does it mean to ask "what time
+% is it"? Alternatively, we can ask ourselves what it means to ask whether one
+% event happened before another. Since clocks skew, we can't use physical
+% clocks reliably. Instead, we'll develop an irreflexive partial order of
+% events in a distributed system without using clocks.
+\picframe{adventure-time}{height=0.5\paperheight}
+
+% Before we develop the ordering, let's semi-formalize our system. Our system
+% is composed of a set of processes each of which execute a totally ordered set
+% of events. An event can be one of three types:
+%
+%   (1) A local event (e.g. a2)
+%   (2) A send event (e.g. a0)
+%   (2) A receive event (e.g. b2)
+%
+% We'll depict systems as graphs where time flows from bottom to top, events
+% are drawn as circles, and colored lines are drawn between pairs of send and
+% receive events.
+\picframe{clock}{height=\paperheight}
+
+\begin{frame}{Constructing a Partial Order}
+  We want to define an irreflexive partial ordering $\to$ on the set of events
+  in a distributed system. Define $\to$ to be the smallest relation satisfying
+  the following rules:
+  \begin{enumerate}
+    \item If $a_i$ comes before $a_j$ is a process $a$, then $a_i \to a_j$.
+    \item If $a$ is the sending of a message and $b$ is the receipt of the
+      message, then $a \to b$.
+    \item If $a \to b$ and $b \to c$, then $a \to c$.
+  \end{enumerate}
+\end{frame}
+
+% We can interpret a -> b to mean that there is a path from a to b in the
+% system diagram. Alternatively, we can interpret a -> b to mean that its
+% possible for a to causally affect b.
+\picframe{clock}{height=\paperheight}
+
+\begin{frame}{Specifying Logical Clocks}
+  Define a clock $C$ as a function from events to natural numbers where we
+  denote $C\carets{a}$ as the number assigned to $a$ by $C$.
+  % This is similar to the notion of a physical clock as a function from events
+  % to real numbers.
+  A clock is correct if it satisfies the \textbf{Clock Condition}:
+  \[
+    \forall a, b.\> a \to b \implies C\carets{a} < C\carets{b}
+  \]
+
+  Note that the converse does not need to be satisfied!
+\end{frame}
+
+\begin{frame}{Implementing Logical Clocks}
+  Each process $i$ maintains a register $C_i$. For an event $a$ that occurs on
+  process $i$, let $C\carets{a}$ be $C_i$ at the time of $a$. Each process
+  updates $C_i$ as follows:
+  \begin{enumerate}
+    \item $C_i$ is incremented between any two events.
+    \item If $a$ is the sending of a message $m$ from process $i$ to process
+      $j$, then $m$ includes $C\carets{a}$ and $j$ updates $C_j$ to be larger
+      than the old value of $C_j$ and $C\carets{a}$.
+  \end{enumerate}
+\end{frame}
+
+% Walk through an example of how the algorithm executes.
+\picframe{clock}{height=\paperheight}
+
+\begin{frame}
+  - TODO: describe total ordering
+  - TODO: describe lamport mutual exclusion algorithm
+  - TODO: skip everything else
+\end{frame}
+\end{document}
