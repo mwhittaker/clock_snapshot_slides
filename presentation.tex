@@ -6,9 +6,10 @@
 \newcommand{\set}[1]{\left\{#1\right\}}
 \newcommand{\carets}[1]{\left\langle #1 \right\rangle}
 
-\newcommand{\picframe}[2]{
+\newcommand{\picframe}[3]{
   % http://tex.stackexchange.com/a/3927
   { % all template changes are local to this group.
+
     \setbeamertemplate{navigation symbols}{}
     \begin{frame}[plain]
       \begin{tikzpicture}[remember picture,overlay]
@@ -16,8 +17,30 @@
           \includegraphics[#2]{#1}
         };
       \end{tikzpicture}
+      \vskip0pt plus 1filll
+      \tiny #3
     \end{frame}
   }
+}
+
+\newcommand{\clocktower}{
+  \picframe{clocktower}{height=\paperheight}{\url{http://bit.ly/1PCy5ye}}
+}
+
+\newcommand{\whattime}{
+  \picframe{adventure-time}{height=0.5\paperheight}{http://bit.ly/1WnG32c}
+}
+
+\newcommand{\spacetime}{
+  \picframe{clock}{height=\paperheight}{}
+}
+
+\newcommand{\naive}{
+  \picframe{naive}{height=\paperheight}{}
+}
+
+\newcommand{\mutex}[1]{
+  \picframe{mutex#1}{height=\paperheight}{}
 }
 
 \begin{document}
@@ -29,7 +52,7 @@
 % occurred at 10:15 comes before an event at 10:20. However, we run into some
 % difficulties when we try to apply these same notions of time to a distributed
 % system.
-\picframe{clocktower}{height=\paperheight}
+\clocktower{}
 
 \begin{frame}{Mathematical Preliminaries: Relations}
     A \emph{relation} $R$ on sets $A$ and $B$ is a subset of $A \times B$.
@@ -96,7 +119,7 @@
 % event happened before another. Since clocks skew, we can't use physical
 % clocks reliably. Instead, we'll develop an irreflexive partial order of
 % events in a distributed system without using clocks.
-\picframe{adventure-time}{height=0.5\paperheight}
+\whattime{}
 
 % Before we develop the ordering, let's semi-formalize our system. Our system
 % is composed of a set of processes each of which execute a totally ordered set
@@ -109,7 +132,7 @@
 % We'll depict systems as graphs where time flows from bottom to top, events
 % are drawn as circles, and colored lines are drawn between pairs of send and
 % receive events.
-\picframe{clock}{height=\paperheight}
+\spacetime{}
 
 \begin{frame}{Constructing a Partial Order}
   We want to define an irreflexive partial ordering $\to$ on the set of events
@@ -126,7 +149,7 @@
 % We can interpret a -> b to mean that there is a path from a to b in the
 % system diagram. Alternatively, we can interpret a -> b to mean that its
 % possible for a to causally affect b.
-\picframe{clock}{height=\paperheight}
+\spacetime{}
 
 \begin{frame}{Specifying Logical Clocks}
   Define a clock $C$ as a function from events to natural numbers where we
@@ -154,11 +177,60 @@
 \end{frame}
 
 % Walk through an example of how the algorithm executes.
-\picframe{clock}{height=\paperheight}
+\spacetime{}
 
-\begin{frame}
-  - TODO: describe total ordering
-  - TODO: describe lamport mutual exclusion algorithm
-  - TODO: skip everything else
+% Now we have an irreflexive total ordering on events using logical clocks. We
+% can extend this to a total ordering of events.
+\begin{frame}{Constructing a Total Ordering}
+  Consider an arbitrary total ordering $<$ on processes. Let's define a
+  $\Rightarrow$ be a total ordering of events where $a_i \Rightarrow b_j$ if and
+  only if
+  \begin{enumerate}
+    \item $C\carets{a_i} < C\carets{b_j}$, or
+    \item $C\carets{a_i} = C\carets{b_j}$ and $a < b$.
+  \end{enumerate}
 \end{frame}
+
+% Show example of total ordering.
+\spacetime{}
+
+\begin{frame}{Distributed Mutual Exclusion}
+  A set of processes share a single resource that should be held by at most one
+  processor at a time. We want an algorithm to enforce mutual exclusion such
+  that:
+  \begin{enumerate}
+    \item \textbf{safety:} At most one process holds the resource.
+    \item \textbf{ordering:} Resource requests should be granted according to
+      the happens before relation $\to$.
+    \item \textbf{progress:} If the resource is held for a finite amount of
+      time, all requests will eventually be granted.
+  \end{enumerate}
+  Assume processes form a clique and never fail and that the network guarantees
+  reliable FIFO communication. Also assume one process has the resource
+  initially.
+\end{frame}
+
+% Show that a naive solution is incorrect. Here, b0 -> c1, but a0 -> a1. This
+% violates property 2 from above.
+\naive{}
+
+\begin{frame}{Lamport's Mutual Exclusion Algorithm}
+  Each process maintains a \emph{request queue} which initially contains $0:p$.
+  Each process follows five rules.
+  \begin{enumerate}
+    \item To request the resource, process $a$ sends $i:a$ to all processes.
+    \item When a process receives $i:a$, it inserts it in the queue and acknowledges.
+    \item To release the resource, sends a release message to all processes.
+    \item When a process receives a release message from $a$ it removes all
+      $i:a$ from its queue.
+    \item Process $a$ is granted the resource when the head of the queue is
+      $[i:a]$ and it has seen messages from all processes later than $i$.
+  \end{enumerate}
+\end{frame}
+
+% Shortly describe why this algorithm guarantees correctness.
+\foreach \i in {1, 2, 3, 4} {
+  \mutex{\i}
+}
+
 \end{document}
