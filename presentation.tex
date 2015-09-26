@@ -233,4 +233,122 @@
   \mutex{\i}
 }
 
+\tikzstyle{v}=[circle, minimum width=1cm]
+\tikzstyle{snapped}=[thick, draw, fill=red!50]
+\tikzstyle{transient}=[thick, draw, dashed, fill=red!10]
+\tikzstyle{arrow}=[ultra thick, ->]
+\tikzstyle{darrow}=[ultra thick, ->, dashed]
+\tikzstyle{msg}=[above, sloped]
+
+\newcommand{\av}[1]{\node[v, #1] (a) at (0,  0) {$a$};}
+\newcommand{\bv}[1]{\node[v, #1] (b) at (4,  2) {$b$};}
+\newcommand{\cv}[1]{\node[v, #1] (c) at (4, -2) {$c$};}
+\newcommand{\dv}[1]{\node[v, #1] (d) at (8,  0) {$d$};}
+\newcommand{\nodes}[4]{
+  \av{#1}
+  \bv{#2}
+  \cv{#3}
+  \dv{#4}
+}
+
+\newcommand{\ab}[2]{\draw[#1] (a) to node[msg]{#2} (b);}
+\newcommand{\ac}[2]{\draw[#1] (a) to node[msg]{#2} (c);}
+\newcommand{\bc}[2]{\draw[#1] (b) to node[msg]{#2} (c);}
+\newcommand{\bd}[2]{\draw[#1] (b) to node[msg]{#2} (d);}
+\newcommand{\cd}[2]{\draw[#1] (c) to node[msg]{#2} (d);}
+
+\newcommand{\tok}{\textcolor{black}{\bullet}\>}
+\newcommand{\pre}{\textcolor{red!20}{\bullet}\>}
+\newcommand{\post}{\textcolor{red!50}{\bullet}\>}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{transient}{transient}{transient}{transient}
+      \ab{darrow}{$\pre \pre \pre$}
+      \ac{darrow}{$\pre$}
+      \bc{darrow}{$\pre \pre$}
+      \bd{darrow}{$ $}
+      \cd{darrow}{$\pre$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{snapped}{transient}{transient}{transient}
+      \ab{darrow}{$\tok \pre \pre$}
+      \ac{darrow}{$\tok$}
+      \bc{darrow}{$\pre$}
+      \bd{darrow}{$\pre$}
+      \cd{darrow}{$\pre \pre$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{snapped}{transient}{snapped}{transient}
+      \ab{darrow}{$\post \tok \pre$}
+      \ac{arrow}{$\post$}
+      \bc{darrow}{$\pre \pre$}
+      \bd{darrow}{$ $}
+      \cd{darrow}{$\tok \pre \pre$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{snapped}{transient}{snapped}{transient}
+      \ab{darrow}{$\post \tok$}
+      \ac{arrow}{$\post \post$}
+      \bc{darrow}{$\pre$}
+      \bd{darrow}{$\pre$}
+      \cd{darrow}{$\post \tok \pre$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{snapped}{snapped}{snapped}{transient}
+      \ab{arrow}{$\post \post$}
+      \ac{arrow}{$\post \post$}
+      \bc{darrow}{$\tok \pre$}
+      \bd{darrow}{$\tok \pre$}
+      \cd{darrow}{$\post \post \tok$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{snapped}{snapped}{snapped}{snapped}
+      \ab{arrow}{$\post \post \post$}
+      \ac{arrow}{$\post$}
+      \bc{darrow}{$\post \tok$}
+      \bd{darrow}{$\tok$}
+      \cd{arrow}{$\post \post \post$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \nodes{snapped}{snapped}{snapped}{snapped}
+      \ab{arrow}{$\post \post \post \post$}
+      \ac{arrow}{$\ $}
+      \bc{arrow}{$\post \post$}
+      \bd{arrow}{$\post$}
+      \cd{arrow}{$\post \post$}
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
 \end{document}
