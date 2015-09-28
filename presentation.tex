@@ -3,6 +3,8 @@
 \author{Michael Whittaker}
 
 \usepackage{tikz}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
 \newcommand{\set}[1]{\left\{#1\right\}}
 \newcommand{\carets}[1]{\left\langle #1 \right\rangle}
 
@@ -232,6 +234,59 @@
 \foreach \i in {1, 2, 3, 4} {
   \mutex{\i}
 }
+
+\tikzstyle{vert}=[circle, inner sep=0cm, minimum width=0.5cm, draw, thick]
+\tikzstyle{p}=[vert, fill=red!20]
+\tikzstyle{q}=[vert, fill=blue!20]
+
+\newcommand{\barbell}[6]{
+  \node[p]                     (p#1) at #2 {#3};
+  \node[q, right=0.5cm of p#1] (q#1)       {#4};
+  \draw[->, thick] (p#1.45)  -- node[above]{#5} (q#1.135);
+  \draw[<-, thick] (p#1.315) -- node[below]{#6} (q#1.225);
+  \node (c#1) at ($(p#1)!0.5!(q#1)$) {};
+  \node[above=0.35cm of c#1] (n#1) {};
+  \node[right=0.25cm of q#1] (e#1) {};
+  \node[below=0.35cm of c#1] (s#1) {};
+  \node[left =0.25cm of p#1] (w#1) {};
+}
+
+\newcommand{\blt}{\ensuremath{\bullet}}
+\newcommand{\bbt}{\ensuremath{\bullet \bullet}}
+
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \barbell{1}{(0,  0)}{\blt}{    }{    }{    };
+      \barbell{2}{(5,  0)}{    }{    }{\blt}{    };
+      \barbell{3}{(5, -3)}{    }{\blt}{    }{    };
+      \barbell{4}{(0, -3)}{    }{    }{    }{\blt};
+      \draw[ultra thick, ->] (e1) -- (w2);
+      \draw[ultra thick, ->] (s2) -- (n3);
+      \draw[ultra thick, ->] (w3) -- (e4);
+      \draw[ultra thick, ->] (n4) -- (s1);
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\begin{frame}
+  \begin{center}
+    \scalebox{0.75}{
+    \begin{tikzpicture}[xscale=3, yscale=1.5]
+      \barbell{01}{(+0, +0)}{\blt}{\blt}{    }{    };
+      \barbell{02}{(+1, +1)}{\blt}{    }{    }{\blt};
+      \barbell{03}{(+1, -1)}{    }{\blt}{\blt}{    };
+      \barbell{04}{(+2, +2)}{\bbt}{    }{    }{    };
+      \barbell{05}{(+2, +0)}{    }{    }{\blt}{\blt};
+      \barbell{06}{(+2, -2)}{    }{\bbt}{    }{    };
+      \barbell{07}{(+3, +2)}{\blt}{    }{\blt}{    };
+      \barbell{08}{(+3, -2)}{    }{\blt}{    }{\blt};
+      \barbell{09}{(+4, +1)}{    }{    }{    }{\bbt};
+      \barbell{10}{(+4, -1)}{    }{    }{\bbt}{    };
+    \end{tikzpicture}
+    }
+  \end{center}
+\end{frame}
 
 \tikzstyle{v}=[circle, minimum width=1cm]
 \tikzstyle{snapped}=[thick, draw, fill=red!50]
