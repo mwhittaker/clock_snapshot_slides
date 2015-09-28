@@ -271,7 +271,7 @@
 
 \begin{frame}
   \begin{center}
-    \scalebox{0.75}{
+    \scalebox{0.7}{
     \begin{tikzpicture}[xscale=3, yscale=1.5]
       \barbell{01}{(+0, +0)}{\blt}{\blt}{    }{    };
       \barbell{02}{(+1, +1)}{\blt}{    }{    }{\blt};
@@ -283,6 +283,20 @@
       \barbell{08}{(+3, -2)}{    }{\blt}{    }{\blt};
       \barbell{09}{(+4, +1)}{    }{    }{    }{\bbt};
       \barbell{10}{(+4, -1)}{    }{    }{\bbt}{    };
+      \draw[ultra thick, ->] (e01) -- (w02);
+      \draw[ultra thick, ->] (e01) -- (w03);
+      \draw[ultra thick, ->] (e02) -- (w04);
+      \draw[ultra thick, ->] (e02) -- (w05);
+      \draw[ultra thick, ->] (e03) -- (w05);
+      \draw[ultra thick, ->] (e03) -- (w06);
+      \draw[ultra thick, ->] (e04) -- (w07);
+      \draw[ultra thick, ->] (e05) -- (w07);
+      \draw[ultra thick, ->] (e05) -- (w08);
+      \draw[ultra thick, ->] (e06) -- (w08);
+      \draw[ultra thick, ->] (e07) -- (w10);
+      \draw[ultra thick, ->] (e08) -- (w09);
+      \draw[ultra thick, ->] (w09) -- (e02);
+      \draw[ultra thick, ->] (w10) -- (e03);
     \end{tikzpicture}
     }
   \end{center}
