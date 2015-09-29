@@ -68,6 +68,24 @@
 \begin{frame}
   \titlepage
 \end{frame}
+
 \input{clocks.tex}
 \input{snapshots.tex}
+
+\begin{frame}{Discussion}
+  \pause
+  \begin{itemize}
+    \item Lamport clocks map a set of partially ordered events to a totally
+      ordered set. Does this make sense? If not, how could we improve on
+      Lamport clocks?
+    \item How adequate are the system models presented in the papers?
+    \item Is it reasonable to abandon physical clocks because of their
+      inaccuracy, or is that an overreaction? Can physical clocks and logical
+      clocks be combined?
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \url{https://github.com/mwhittaker/clock\_snapshot\_slides}
+\end{frame}
 \end{document}
