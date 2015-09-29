@@ -1,3 +1,7 @@
+% Now that we understand logical clocks and the partial ordering of events in a
+% distributed systems, we'll switch gears and talk about the Chandy Lamport
+% snaphshot algorithm. Explain what a snapshot is. Explain how the notion is
+% very deeply tied to the idea of logical time.
 \frozen{}
 
 \tikzstyle{vert}=[circle, minimum width=1cm, draw, thick]
@@ -20,6 +24,63 @@
       \draw[thick, ->] (p.325) -- node[below]{$C_2$} (q.215);
       \draw[thick, ->] (q)     -- node[right]{$C_3$} (r);
         \draw[thick, ->] (r)   -- node[left ]{$C_4$} (p);
+    \end{tikzpicture}
+  \end{center}
+\end{frame}
+
+\tikzstyle{vert}=[
+  inner sep=0cm,
+  minimum width=0.5cm,
+  minimum height=0.5cm,
+  draw,
+  thick,
+]
+\tikzstyle{p}=[circle, vert]
+\tikzstyle{q}=[vert]
+
+\newcommand{\barbell}[6]{
+  \node[p]                     (p#1) at #2 {#3};
+  \node[q, right=0.5cm of p#1] (q#1)       {#4};
+  \draw[->, thick] (p#1.35)  -- node[above]{#5} (q#1.150);
+  \draw[<-, thick] (p#1.325) -- node[below]{#6} (q#1.210);
+
+  \node (c#1) at ($(p#1)!0.5!(q#1)$) {};
+
+  \node[above=0.35cm of c#1] (n#1) {};
+  \node[right=0.25cm of q#1] (e#1) {};
+  \node[below=0.35cm of c#1] (s#1) {};
+  \node[left =0.25cm of p#1] (w#1) {};
+
+  \node[above=0.35cm of e#1] (ne#1) {};
+  \node[below=0.35cm of e#1] (se#1) {};
+  \node[below=0.35cm of w#1] (sw#1) {};
+  \node[above=0.35cm of w#1] (nw#1) {};
+}
+
+\newcommand{\tkn}{\ensuremath{\bullet}}
+\newcommand{\blt}{\ensuremath{\textcolor{red!75}{\bullet}}}
+\newcommand{\bbt}{\blt\blt}
+
+\newcommand{\onetoken}{
+  \barbell{1}{(0,  0)}{\blt}{    }{    }{    };
+  \barbell{2}{(5,  0)}{    }{    }{\blt}{    };
+  \barbell{3}{(5, -3)}{    }{\blt}{    }{    };
+  \barbell{4}{(0, -3)}{    }{    }{    }{\blt};
+  \draw[ultra thick, ->, black] (e1) -- (w2);
+  \draw[ultra thick, ->, red  ] (s2) -- (n3);
+  \draw[ultra thick, ->, green] (w3) -- (e4);
+  \draw[ultra thick, ->, blue ] (n4) -- (s1);
+}
+
+% This is a concise way to describe the set of all global system states and the
+% set of all computations. Here, each process and each channel has two states.
+% Each vertex in this graph of graphs is a global system state. Every finite
+% length walk starting from the initial state is a computation. This example is
+% a single-token system.
+\begin{frame}
+  \begin{center}
+    \begin{tikzpicture}
+      \onetoken
     \end{tikzpicture}
   \end{center}
 \end{frame}
@@ -49,56 +110,6 @@
   % sequences of events form a computation.
 \end{frame}
 
-\tikzstyle{vert}=[circle, inner sep=0cm, minimum width=0.5cm, draw, thick]
-\tikzstyle{p}=[vert, fill=red!20]
-\tikzstyle{q}=[vert, fill=blue!20]
-
-\newcommand{\barbell}[6]{
-  \node[p]                     (p#1) at #2 {#3};
-  \node[q, right=0.5cm of p#1] (q#1)       {#4};
-  \draw[->, thick] (p#1.35)  -- node[above]{#5} (q#1.145);
-  \draw[<-, thick] (p#1.325) -- node[below]{#6} (q#1.215);
-
-  \node (c#1) at ($(p#1)!0.5!(q#1)$) {};
-
-  \node[above=0.35cm of c#1] (n#1) {};
-  \node[right=0.25cm of q#1] (e#1) {};
-  \node[below=0.35cm of c#1] (s#1) {};
-  \node[left =0.25cm of p#1] (w#1) {};
-
-  \node[above=0.35cm of e#1] (ne#1) {};
-  \node[below=0.35cm of e#1] (se#1) {};
-  \node[below=0.35cm of w#1] (sw#1) {};
-  \node[above=0.35cm of w#1] (nw#1) {};
-}
-
-\newcommand{\blt}{\ensuremath{\bullet}}
-\newcommand{\bbt}{\ensuremath{\bullet \bullet}}
-
-\newcommand{\onetoken}{
-  \barbell{1}{(0,  0)}{\blt}{    }{    }{    };
-  \barbell{2}{(5,  0)}{    }{    }{\blt}{    };
-  \barbell{3}{(5, -3)}{    }{\blt}{    }{    };
-  \barbell{4}{(0, -3)}{    }{    }{    }{\blt};
-  \draw[ultra thick, ->, black] (e1) -- (w2);
-  \draw[ultra thick, ->, red  ] (s2) -- (n3);
-  \draw[ultra thick, ->, green] (w3) -- (e4);
-  \draw[ultra thick, ->, blue ] (n4) -- (s1);
-}
-
-% This is a concise way to describe the set of all global system states and the
-% set of all computations. Here, each process and each channel has two states.
-% Each vertex in this graph of graphs is a global system state. Every finite
-% length walk starting from the initial state is a computation. This example is
-% a single-token system.
-\begin{frame}
-  \begin{center}
-    \begin{tikzpicture}
-      \onetoken
-    \end{tikzpicture}
-  \end{center}
-\end{frame}
-
 \newcommand{\twotoken}{
     \barbell{01}{(+0, +0)}{\blt}{\blt}{    }{    };
     \barbell{02}{(+1, +1)}{\blt}{    }{    }{\blt};
@@ -110,6 +121,33 @@
     \barbell{08}{(+3, -2)}{    }{\blt}{    }{\blt};
     \barbell{09}{(+4, +1)}{    }{    }{    }{\bbt};
     \barbell{10}{(+4, -1)}{    }{    }{\bbt}{    };
+    \draw[ultra thick, ->, black] (e01) -- (w02);
+    \draw[ultra thick, ->, blue ] (e01) -- (w03);
+    \draw[ultra thick, ->, green] (e02) -- (w04);
+    \draw[ultra thick, ->, blue ] (e02) -- (w05);
+    \draw[ultra thick, ->, black] (e03) -- (w05);
+    \draw[ultra thick, ->, red  ] (e03) -- (w06);
+    \draw[ultra thick, ->, blue ] (e04) -- (w07);
+    \draw[ultra thick, ->, green] (e05) -- (w07);
+    \draw[ultra thick, ->, red  ] (e05) -- (w08);
+    \draw[ultra thick, ->, black] (e06) -- (w08);
+    \draw[ultra thick, ->, blue ] (e07) -- (w10);
+    \draw[ultra thick, ->, black] (e08) -- (w09);
+    \draw[ultra thick, ->, green] (w09) -- (e02);
+    \draw[ultra thick, ->, red  ] (w10) -- (e03);
+}
+
+\newcommand{\twotokensnap}{
+    \barbell{01}{(+0, +0)}{\blt}{\blt}{\tkn    }{    };
+    \barbell{02}{(+1, +1)}{\blt}{    }{        }{\blt};
+    \barbell{03}{(+1, -1)}{    }{\blt}{\blt\tkn}{    };
+    \barbell{04}{(+2, +2)}{\bbt}{    }{        }{    };
+    \barbell{05}{(+2, +0)}{    }{    }{\blt\tkn}{\blt};
+    \barbell{06}{(+2, -2)}{    }{\bbt}{        }{    };
+    \barbell{07}{(+3, +2)}{\blt}{    }{\blt    }{\tkn};
+    \barbell{08}{(+3, -2)}{    }{\blt}{        }{\blt};
+    \barbell{09}{(+4, +1)}{    }{    }{        }{\bbt};
+    \barbell{10}{(+4, -1)}{    }{    }{\bbt    }{    };
     \draw[ultra thick, ->, black] (e01) -- (w02);
     \draw[ultra thick, ->, blue ] (e01) -- (w03);
     \draw[ultra thick, ->, green] (e02) -- (w04);
@@ -300,7 +338,7 @@
   \begin{center}
     \scalebox{0.7}{
       \begin{tikzpicture}[xscale=3, yscale=1.5]
-        \twotoken{}
+        \twotokensnap{}
         \pause
         \draw (sw01) rectangle (ne01);
         \pause
@@ -328,7 +366,7 @@
   \begin{center}
     \scalebox{0.7}{
       \begin{tikzpicture}[xscale=3, yscale=1.5]
-        \twotoken{}
+        \twotokensnap{}
         \draw (sw01) rectangle (ne01);
         \draw (sw03) rectangle (ne03);
         \draw (sw05) rectangle (ne05);
@@ -392,7 +430,7 @@
   \begin{center}
     \scalebox{0.7}{
       \begin{tikzpicture}[xscale=3, yscale=1.5]
-        \twotoken{}
+        \twotokensnap{}
       \end{tikzpicture}
     }
   \end{center}
@@ -425,7 +463,7 @@
   \begin{center}
     \scalebox{0.7}{
       \begin{tikzpicture}[xscale=3, yscale=1.5]
-        \twotoken{}
+        \twotokensnap{}
         \draw (sw01) rectangle (ne01);
         \draw (sw03) rectangle (ne03);
         \draw (sw05) rectangle (ne05);
