@@ -1,0 +1,194 @@
+% First, a bit of philosophy, what is time? What's the use of time? Well, we
+% use time every day as a way to order events. For example, an event that
+% occurred at 10:15 comes before an event at 10:20. However, we run into some
+% difficulties when we try to apply these same notions of time to a distributed
+% % system.
+\clocktower{}
+
+% Before we tackle time in a distributed system, let's briefly review some math.
+\begin{frame}{Mathematical Preliminaries: Relations}
+    A \emph{relation} $R$ on sets $A$ and $B$ is a subset of $A \times B$.
+    Alternatively, a relation $R$ on a set $A$ is a subset of $A \times A$.
+    \[
+      R \subseteq A \times B, \qquad R \subseteq A \times A
+    \]
+
+    \pause
+
+    For example, the following sets are relations on $A = \set{1, 2}$ and $B =
+    \set{x, y, z}$.
+      \begin{itemize}
+        \item $\set{(1, x), (2, x)}$
+        \item $\set{(1, x), (1, y), (2, z)}$
+        \item $A \times B$
+        \item $\set{}$
+      \end{itemize}
+
+    \pause
+
+    We denote $(a, b) \in R$ as $a R b$. For example $1 = 1$ denotes $(1, 1)
+    \in =$, and $1 \leq 42$ denotes $(1, 42) \in \leq$.
+\end{frame}
+
+\begin{frame}{Mathematical Preliminaries: Partial Orderings}
+  An \emph{irreflexive partial ordering} $<$ on a set $A$ is a relation on $A$
+  that satisfies three properties:
+  \begin{enumerate}
+    \item \textbf{irreflexivity} $a \not< a$.
+    \item \textbf{antisymmetry} If $a < b$ then $b \not< a$.
+    \item \textbf{transitivity} If $a < b$ and $b < c$, then $a < c$.
+  \end{enumerate}
+\end{frame}
+
+\begin{frame}{Mathematical Preliminaries: Partial Orderings}
+  For example, the strict subset relation $\subset$ is an irreflexive partial
+  order on the powerset $2^A$ of some a set $A$.
+  \begin{enumerate}
+    \item \textbf{irreflexivity} $\set{1, 2, 3} \not\subset \set{1, 2, 3}$.
+    \item \textbf{antisymmetry} $\set{1, 2} \subset \set{1, 2, 3}$, so $\set{1,
+      2, 3} \not\subset \set{1, 2}$.
+    \item \textbf{transitivity} $\set{1} \subset \set{1, 2}$ and $\set{1, 2}
+      \subset \set{1, 2, 3}$, so $\set{1} \subset \set{1, 2, 3}$.
+  \end{enumerate}
+
+  \pause
+
+  Note it's not always true that $a < b$ or $b < a$. For example, $\set{1, 2}
+  \not\subset \set{2, 3}$ and $\set{2, 3} \not\subset \set{1, 2}$.
+\end{frame}
+
+\begin{frame}{Mathematical Preliminaries: Total Orderings}
+  A \emph{irreflexive total ordering} $<$ on a set $A$ is an irreflexive
+  partial ordering on $A$ that satisfies the additional property:
+  \begin{enumerate}
+    \item \textbf{totality} If $a \neq b$ then $a < b$ or $b < a$.
+  \end{enumerate}
+\end{frame}
+
+% With the mathematical preliminaries out of the way, we can now ask ourselves
+% in the context of a distributed system, what does it mean to ask "what time
+% is it"? Alternatively, we can ask ourselves what it means to ask whether one
+% event happened before another. Since clocks skew, we can't use physical
+% clocks reliably. Instead, we'll develop an irreflexive partial order of
+% events in a distributed system without using clocks.
+\whattime{}
+
+% Before we develop the ordering, let's semi-formalize our system. Our system
+% is composed of a set of processes each of which execute a totally ordered set
+% of events. An event can be one of three types:
+%
+%   (1) A local event (e.g. a2)
+%   (2) A send event (e.g. a0)
+%   (2) A receive event (e.g. b2)
+%
+% We'll depict systems as graphs where time flows from bottom to top, events
+% are drawn as circles, and colored lines are drawn between pairs of send and
+% receive events.
+%
+% Now it's obvious that certain events come before one another. For example, a0
+% comes before a1. Similarly, it's intuitive to say that a0 comes before b2.
+% However, some events don't seem to be ordered. For example, a1 and b4.
+\spacetime{}
+
+% We can formalize this intuition into what we call the happens before relation.
+\begin{frame}{Constructing a Partial Order}
+  We want to define an irreflexive partial ordering $\to$ on the set of events
+  in a distributed system. Define $\to$ to be the smallest relation satisfying
+  the following rules:
+  \begin{enumerate}
+    \item If $a_i$ comes before $a_j$ is a process $a$, then $a_i \to a_j$.
+    \item If $a$ is the sending of a message and $b$ is the receipt of the
+      message, then $a \to b$.
+    \item If $a \to b$ and $b \to c$, then $a \to c$.
+  \end{enumerate}
+\end{frame}
+
+% We can interpret a -> b to mean that there is a path from a to b in the
+% system diagram. Alternatively, we can interpret a -> b to mean that its
+% possible for a to causally affect b.
+\spacetime{}
+
+% Physical clocks help assign a physical time, which we can think of as a real
+% number, to an event which is an approximation of its universal time.
+% Similarly, we want to make logical clocks to assign logical time to events.
+\begin{frame}{Logical Clocks}
+  Define a clock $C$ as a function from events to natural numbers where we
+  denote $C\carets{a}$ as the number assigned to $a$ by $C$.
+  A clock is correct if it satisfies the \textbf{Clock Condition}:
+  \[
+    \forall a, b.\> a \to b \implies C\carets{a} < C\carets{b}
+  \]
+
+  Note that the converse does not need to be satisfied!
+\end{frame}
+
+\begin{frame}{Implementing Logical Clocks}
+  Each process $i$ maintains a register $C_i$. For an event $a$ that occurs on
+  process $i$, let $C\carets{a}$ be $C_i$ at the time of $a$. Each process
+  updates $C_i$ as follows:
+  \begin{enumerate}
+    \item $C_i$ is incremented between any two events.
+    \item If $a$ is the sending of a message $m$ from process $i$ to process
+      $j$, then $m$ includes $C\carets{a}$ and $j$ updates $C_j$ to be larger
+      than the old value of $C_j$ and $C\carets{a}$.
+  \end{enumerate}
+\end{frame}
+
+% Walk through an example of how the algorithm executes.
+\spacetime{}
+
+% Now we have an irreflexive total ordering on events using logical clocks. We
+% can extend this to a total ordering of events.
+\begin{frame}{Constructing a Total Ordering}
+  Consider an arbitrary total ordering $<$ on processes. Let's define a
+  $\Rightarrow$ be a total ordering of events where $a_i \Rightarrow b_j$ if and
+  only if
+  \begin{enumerate}
+    \item $C\carets{a_i} < C\carets{b_j}$, or
+    \item $C\carets{a_i} = C\carets{b_j}$ and $a < b$.
+  \end{enumerate}
+\end{frame}
+
+% Show example of total ordering.
+\spacetime{}
+
+% Distributed mutual exclusion is one application of logical clocks and total
+% orderings.
+\begin{frame}{Distributed Mutual Exclusion}
+  A set of processes share a single resource that should be held by at most one
+  processor at a time. We want an algorithm to enforce mutual exclusion such
+  that:
+  \begin{enumerate}
+    \item \textbf{safety:} At most one process holds the resource.
+    \item \textbf{ordering:} Resource requests should be granted according to
+      the happens before relation $\to$.
+    \item \textbf{progress:} If the resource is held for a finite amount of
+      time, all requests will eventually be granted.
+  \end{enumerate}
+  Assume processes form a clique and never fail and that the network guarantees
+  reliable FIFO communication. Also assume one process has the resource
+  initially.
+\end{frame}
+
+% Show that a naive solution is incorrect. Here, b0 -> c1, but a0 -> a1. This
+% violates property 2 from above.
+\naive{}
+
+\begin{frame}{Lamport's Mutual Exclusion Algorithm}
+  Each process maintains a \emph{request queue} which initially contains $0:p$.
+  Each process follows five rules.
+  \begin{enumerate}
+    \item To request the resource, process $a$ sends $i:a$ to all processes.
+    \item When a process receives $i:a$, it inserts it in the queue and acknowledges.
+    \item To release the resource, sends a release message to all processes.
+    \item When a process receives a release message from $a$ it removes all
+      $i:a$ from its queue.
+    \item Process $a$ is granted the resource when the head of the queue is
+      $[i:a]$ and it has seen messages from all processes later than $i$.
+  \end{enumerate}
+\end{frame}
+
+% Shortly describe why this algorithm guarantees correctness.
+\foreach \i in {1, 2, 3, 4} {
+  \mutex{\i}
+}
