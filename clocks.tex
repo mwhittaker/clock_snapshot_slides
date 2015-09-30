@@ -184,7 +184,8 @@
     \item When a process receives a release message from $a$ it removes all
       $i:a$ from its queue.
     \item Process $a$ is granted the resource when the head of the queue is
-      $[i:a]$ and it has seen messages from all processes later than $i$.
+      $[i:a]$ and it has seen acknowledgements from all processes later than
+      $i$.
   \end{enumerate}
 \end{frame}
 
